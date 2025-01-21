@@ -110,11 +110,19 @@ cd VideoWorld
 bash ./tools/calvin_train.sh
 ```
 
-
-
-
-
-
+# Citation
+If you find this project useful in your research, please consider citing:
+```
+@misc{ren2025videoworldexploringknowledgelearning,
+      title={VideoWorld: Exploring Knowledge Learning from Unlabeled Videos}, 
+      author={Zhongwei Ren and Yunchao Wei and Xun Guo and Yao Zhao and Bingyi Kang and Jiashi Feng and Xiaojie Jin},
+      year={2025},
+      eprint={2501.09781},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2501.09781}, 
+}
+```
 
 
 
