@@ -53,15 +53,12 @@ def locate_new_piece_using_morphology(img0, img1, corner_x=12, corner_y=12, cell
     gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
     gray[gray<90] = 0
     gray[gray>220] = 0
-    # cv2.imwrite('/opt/tiger/gary.jpg', gray)
     # 应用阈值
     _, thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
-    cv2.imwrite('/opt/tiger/thresh.jpg', thresh)
     # 形态学变换，如膨胀操作
     kernel = np.ones((2,2),np.uint8)
     erode = cv2.erode(thresh, kernel, iterations=1)
     dilation = cv2.dilate(erode, kernel, iterations=2)
-    cv2.imwrite('/opt/tiger/dilation.jpg', dilation)
     contours, _ = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     max_contour = max(contours, key=cv2.contourArea)
     M = cv2.moments(max_contour)
@@ -75,7 +72,7 @@ def locate_new_piece_using_morphology(img0, img1, corner_x=12, corner_y=12, cell
 
 def render_next_state(moves, caps, save_path=None):
     name = str(int((random.random() + random.random() + random.random() + random.random()) * 1000000)) + '.png'
-    save_path = '/opt/tiger/visualize_temp/{}'.format(name) if save_path is None else save_path
+    save_path = './visualize_temp/{}'.format(name) if save_path is None else save_path
     board_size = 9
     fig, ax = plt.subplots(figsize=(2.56, 2.56), facecolor='orange')
     ax.set_facecolor('orange')
@@ -97,8 +94,7 @@ def render_next_state(moves, caps, save_path=None):
 
     plt.tight_layout()
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0, hspace=0)
-    # import pdb;pdb.set_trace()
-    # moves = moves[1:]
+  
     record_dot = {}
     color_dict = {'b': 'black', 'w': 'white'}
     for mi, (move, cap) in enumerate(zip(moves, caps)):
@@ -137,7 +133,7 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         super().__init__(
             vbackbone=vbackbone, neck=neck, head=head, init_cfg=init_cfg)
 
-        # import pdb;pdb.set_trace()
+   
         self.vbackbone = MODELS.build(vbackbone)
         self.vq_num = neck['vq_num']
         self.neck = MODELS.build(neck)
@@ -152,7 +148,7 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         self.pred_action = pred_action
         self.work_dir = work_dir
         self.max_generate_length = max_generate_length
-        # import pdb;pdb.set_trace()
+    
 
         state_dict = torch.load(vbackbone['init_cfg']['checkpoint'])['state_dict']
         encoder_state_dict = {}
@@ -209,13 +205,10 @@ class VideoWorldGoBattleVSHuman(BaseModel):
             )
         send_command_and_get_response(self.katago_process, 'boardsize {}'.format(str(9)))
         send_command_and_get_response(self.katago_process, 'komi 5.5')
-
-
-        # if self.kata_ana:
-        #     self.katago_ana_process = KataGo_Ana(katago_executable, config_file, model_file)
-        
+    
         self.worker_index = f'{torch.cuda.current_device()}_{worker_index}'
         os.system(f'mkdir ./visualize/')
+        os.system(f'mkdir ./visualize_temp/')
         
     def check_rec(self, visual_ids, visual_mask_ids, img):
         # import pdb;pdb.set_trace()
@@ -241,22 +234,20 @@ class VideoWorldGoBattleVSHuman(BaseModel):
             cv2.imwrite(f'/opt/tiger/rec_visualize/test_{idx}.jpg', show)
 
     def forward_train(self, img, input_ids, pred_label=None, attention_mask=None, **kwargs):
-        # import pdb;pdb.set_trace()
+       
         if isinstance(input_ids, list):
             input_ids = torch.stack(input_ids)
             pred_label = torch.stack(pred_label)
             img = torch.stack(img)
             attention_mask = torch.stack(attention_mask)
             invalid = torch.stack(kwargs.get('invalid'))
-        # self.visualize(img, pred_label.to(img))
-        # if len(img.shape) == 4:
+        
         b, c, h, w = img.shape
-        # visual_ids = torch.tensor([[112153, 111769, 112177, 112201, 113207,  78422,  79446, 104519,  88598,80495,  56720, 107080, 113223, 104519, 106631, 107079],[114227, 112209, 112152, 112200,  56688,  55833, 104078, 107078,  88430,111762,  82511, 104519, 112199, 107078, 107072, 107079],[112208,  86608, 112201, 113773,  87574, 106638, 107086, 107078,  86101,107086, 107087, 107079,  61003, 104518, 107072, 107078],[ 61881,  59000, 101911, 112200, 114198,  80749,  80471, 112198, 113206,55182,  60272,  81480, 112198, 105543, 109127, 107070]]).to(input_ids)
+        
         visual_ids = self.encode_image(img)
 
         if pred_label is not None:
             visual_mask_ids = self.encode_image(pred_label)
-            # visual_mask_ids = viacsual_ids
             visual_mask_ids = visual_mask_ids.detach()
         else:
             visual_mask_ids = None
@@ -281,14 +272,12 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         
         logits, loss, _ = self.neck(input_ids, attention_mask=attention_mask, labels=labels)
         # print("--------", input_ids[0], input_ids[1], "--------")
-        # import pdb;pdb.set_trace()
         losses = {'losses_v': loss}
 
         return losses
 
 
     def forward_test(self, img, input_ids, pred_label=None, attention_mask=None, index=None, **kwargs):
-        # import pdb;pdb.set_trace()
         return self.image_gen_battle(img, input_ids, pred_label, attention_mask, index, **kwargs)
        
 
@@ -304,7 +293,6 @@ class VideoWorldGoBattleVSHuman(BaseModel):
 
     def image_gen_battle(self, img, input_ids, pred_label=None, attention_mask=None, index=0, **kwargs):
         
-        import pdb;pdb.set_trace()
         kwargs['eos_token_id'] = 50256
         cur_iter = kwargs.pop('iter', 0)
         # cur_iter = f'{cur_iter}_{self.worker_index}'
@@ -328,7 +316,7 @@ class VideoWorldGoBattleVSHuman(BaseModel):
             "score_list": []
         }
 
-        max_retry = 5
+        max_retry = 10
         moves = []
         board = sgfmill.boards.Board(self.sub_board_size)
         displayboard = board.copy()
@@ -345,8 +333,6 @@ class VideoWorldGoBattleVSHuman(BaseModel):
             attention_mask = torch.stack(attention_mask)
         while True:
             # generte next move image
-            # import pdb;pdb.set_trace()
-            # initial_ids = copy.deepcopy(input_ids)
             visual_ids = self.encode_image(img)
             _input_ids, _attention_mask, _ = self.prepare_input(visual_ids, input_ids, attention_mask)
             attn_length = [torch.where(attn_m != 0)[0].max() for attn_m in _attention_mask]
@@ -358,8 +344,6 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                 outputs, action_pred = self.generate_image(_input_ids, _attention_mask, visual_ids.shape[-1], **kwargs)
                 outputs = outputs[0].permute(1, 2, 0).cpu().numpy().astype(np.uint8)
                 _img = torch.clamp((img[0] + 1) * 127, min=0, max=255).permute(1, 2, 0).cpu().numpy().astype(np.uint8)
-                # cv2.imwrite(f'/opt/tiger/visualize/{step_num}.jpg', outputs[:,:,::-1])
-                # cv2.imwrite('/opt/tiger/img.jpg', _img[:,:,::-1])
                 try:
                     if step_num == 0:
                         pos = 'D6'
@@ -368,7 +352,6 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                         pred_y, pred_x = locate_new_piece_using_morphology(_img, outputs) #this pred_x is actually 8 - row
                         pred_x = 8 - pred_x
                         num_pos = pred_x * 9 + pred_y
-                        # print("pred_act & true act:", num_pos, action_pred)
                         col = chr(pred_y + 65) if pred_y < 8 else chr(pred_y + 66)
                         row = str(pred_x + 1)
                         pos = col + row
@@ -389,12 +372,6 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                         max_prior = max(step_prior)
                         pred_prior = step_prior[pred_row_major_pos]
                         prior_ratio_pred_to_katago.append(pred_prior / max_prior)
-
-                    # if self.kata_ana:
-                    #     ana_res = self.katago_ana_process.query(board, moves, 5.5, max_visits=50, max_time=1)
-                    #     winrate = 1 - ana_res['rootInfo']['winrate']
-                    #     eval_dict['winrate_list'].append(winrate)
-
                     break
                 except:
                     print("Error, retry num {}".format(try_num))
@@ -427,7 +404,6 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                 img = render_next_state(moves, caps).to(img)[None]
 
             except:
-                # import pdb;pdb.set_trace()
                 break
 
         _score = self.send_ai_command('final_score')
@@ -468,10 +444,9 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         outputs = self.generate(input_ids, attention_mask, **kwargs)
         text_length = input_ids.size(1)
         if self.pred_action:
-            action_pred = outputs[:, text_length:text_length + 1]
-            image_pred = outputs[:, text_length + 3:text_length + 3 + size]
+            action_pred = outputs[:, text_length:text_length + 3]
+            image_pred = outputs[:, text_length + 5:text_length + 5 + size]
             action_pred = action_pred - 32004
-            action_pred = int(action_pred)
             pred_x, pred_y = action_pred % 9, action_pred // 9
         else:
             action_pred = None
@@ -551,7 +526,7 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                 cur_new_input_ids.append(input_id)
                 cur_new_attention_masks.append(bz_attention_mask)
                 cur_new_label.append(input_id)
-            # cur_new_labels.append()
+           
 
             cur_new_input_ids = torch.cat(cur_new_input_ids)
             cur_new_attention_masks = torch.cat(cur_new_attention_masks)
@@ -570,9 +545,7 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         return input_ids, attention_mask, labels
 
     def generate(self, input_ids, attention_mask=None, **generate_kwargs):
-        # generate_kwargs['image_embeds'] = visual_full
-        # generate_kwargs['input_ids_length'] = input_ids.size(1)
-        # import pdb;pdb.set_trace()
+       
         if attention_mask is None:
             attention_mask = torch.ones_like(input_ids)
 
@@ -585,170 +558,4 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         return text_pred
 
 
-"""
-def prepare_input(self, visual_ids, input_ids, attention_mask, visual_mask_ids=None):
-        new_input_ids = []
-        new_attention_mask = []
-        new_labels = []
-        visual_mask_ids = torch.zeros((len(visual_ids), 0)).to(visual_ids) if visual_mask_ids is None else visual_mask_ids
-        for bz, (visual_id, input_id) in enumerate(zip(visual_ids, input_ids)):
-            if visual_id.ndim != 2:
-                visual_id = visual_id[None]
-            cur_new_input_ids = []
-            cur_new_attention_mask = []
 
-            bz_attention_mask = attention_mask[bz]
-            image_token_indices = torch.where(input_id == IMAGE_TOKEN_INDEX)[0]
-            cur_image_idx = 0
-
-            while image_token_indices.numel() > 0:
-                image_token_start = image_token_indices[0]
-                cur_visual_id = visual_id[cur_image_idx]
-
-                cur_attention_mask = torch.ones_like(cur_visual_id)
-                cur_new_input_ids.append(input_id[:image_token_start])
-                cur_new_input_ids.append(cur_visual_id)
-                cur_new_input_ids.append(input_id[image_token_start + 1 : image_token_start + 2])
-
-                cur_new_attention_mask.append(bz_attention_mask[:image_token_start])
-                cur_new_attention_mask.append(cur_attention_mask)
-                cur_new_attention_mask.append(bz_attention_mask[image_token_start + 1 : image_token_start + 2])
-
-                input_id = input_id[image_token_start + 2 :]
-                bz_attention_mask = bz_attention_mask[image_token_start + 2 :]
-                image_token_indices = torch.where(input_id == IMAGE_TOKEN_INDEX)[0]
-
-            if input_id.numel() > 0:
-                cur_new_input_ids.append(input_id)
-                cur_new_attention_mask.append(bz_attention_mask)
-
-            cur_new_input_ids = torch.cat(cur_new_input_ids)
-            cur_new_attention_mask = torch.cat(cur_new_attention_mask)
-
-            new_input_ids.append(cur_new_input_ids)
-            new_attention_mask.append(cur_new_attention_mask)
-
-        input_ids = torch.stack(new_input_ids)
-        attention_mask = torch.stack(new_attention_mask)
-        visual_ids = visual_ids.detach()
-
-        return input_ids, attention_mask
-
-
-    def text_gen(self, img, input_ids, pred_label=None, attention_mask=None, index=None, **kwargs):
-        # import pdb;pdb.set_trace()
-        if isinstance(input_ids, list):
-            input_ids = torch.stack(input_ids)
-            attention_mask = torch.stack(attention_mask)
-        if isinstance(img, list):
-            img = torch.stack(img)
-        visual_ids = self.encode_image(img)
-
-
-        # pred_label = pred_label.to(img)
-        # pred_label = pred_label.permute(0, 3, 1, 2)
-        # label_full = self.vbackbone(pred_label)
-
-        input_ids, attention_mask, _ = self.prepare_input(visual_ids, input_ids, attention_mask)
-
-        attn_length = [torch.where(attn_m != 0)[0].max() for attn_m in attention_mask]
-        max_attn = max(attn_length)
-        input_ids = input_ids[:, :(max_attn+1)]
-        attention_mask = attention_mask[:, :(max_attn+1)]
-
-
-        logits, _ = self.neck(input_ids, attention_mask=attention_mask, labels=input_ids)
-        shift_logits = logits[..., :-1, :].contiguous()
-        shift_labels = input_ids[..., 1:].contiguous()
-        pred_labels = shift_logits.argmax(dim=-1)
-
-        pred_labels = pred_labels[:, -1]
-        gt_labels = shift_labels[:, -1]
-
-
-        out_list = []
-        for pred, gt in zip(pred_labels, gt_labels):
-            tmp = dict()
-            tmp['pred_label'] = pred
-            tmp['gt_label'] = gt.to(pred)
-            out_list.append(tmp)
-
-        return out_list
-
-        return {'pred': outputs, 'gt_label': pred_label}
-
-    def text_gen_battle(self, img, input_ids, pred_label=None, attention_mask=None, index=None, **kwargs):
-
-        kwargs['eos_token_id'] = 50256
-        kwargs['max_length'] = 1
-        katrain_process = self.init_ai(kwargs.pop('katrain_level', ['18k'])[0])
-        eval_dict = {
-            "prior_ratio_kata_to_katago": [],
-            "prior_ratio_pred_to_katago": [],
-            'results': -1,
-            'score': 0,
-            "katrain_level": katrain_level,
-            "data_mode": "go_battle",
-            "katago_ana_results": [],
-            "error_move_num": 0,
-            "error_color_num": 0
-        }
-        max_retry = 3
-        while True:
-            #generte next move image
-            visual_ids = self.encode_image(img)
-            input_ids, attention_mask, _ = self.prepare_input(visual_ids, input_ids, attention_mask)
-            outputs = self.generate_image(input_ids, attention_mask, **kwargs)
-            try_num = 1
-
-            while(try_num <= max_retry):
-                try:
-                    pred_y, pred_x = locate_new_piece_using_morphology(img, outputs)
-                    col = chr(pred_y + 65) if pred_y < 8 else chr(pred_y + 66)
-                    row = str(pred_x + 1)
-                    pos = col + row
-                    katrain_process.query('play B {}'.format(pos))
-                    print("B_move:", pos)
-                    moves.append(('b', (pred_x, pred_y)))
-                    displayboard.play(pred_x, pred_y, 'b')
-                except:
-                    print("Error, retry num {}".format(try_num))
-                    try_num += 1
-
-
-            try:
-                kata_pos = katrain_process.query('genmove W')
-                score = katrain_process.game.current_node.format_score()
-                col = kata_pos[0]
-                row = int(kata_pos[1:]) - 1
-                col = ord(col) - 65 if col != 'J' else ord(col) - 66
-                moves.append(('w', (row, col)))
-                displayboard.play(row, col, 'w')
-
-                img = render_next_state(moves)
-
-            except:
-                break
-
-                # print(sgfmill.ascii_boards.render_board(displayboard))
-
-        _score = katrain_process.game.current_node.format_score() if score is None else score
-        if 'W' in _score:
-            eval_dict['results'] = 0
-        elif 'B' in _score:
-            eval_dict['results'] = 1
-        score = float(_score.split('+')[-1]) if _score is not None else 0
-        if eval_dict['results'] != -1:
-            # if eval_dict['results'] == 1:
-                # import pdb;pdb.set_trace()
-            eval_dict['score'] = score if eval_dict['results'] == 1 else -1 * score
-
-        record = {'eval_dict': eval_dict}
-        katrain_process.engine.close()
-        katrain_process.game.main_thread.join()
-
-
-
-        return [record]
-
-"""

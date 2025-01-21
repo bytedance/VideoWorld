@@ -43,9 +43,3 @@ pip install git+https://github.com/sanderland/katrain.git
 
 #KataGo install 
 git clone https://github.com/lightvector/KataGo.git
-
-#loading
-ln -s /mnt/bn/panxuran/output/ /opt/tiger/PointVIS/VideoWorld/LDM/work_dirs
-ln -s /mnt/bn/panxuran/dataset /opt/tiger/PointVIS/VideoWorld/LDM/data
-ln -s /mnt/bn/panxuran/output/ /opt/tiger/PointVIS/VideoWorld/VideoWorld/work_dirs
-ln -s /mnt/bn/panxuran/dataset /opt/tiger/PointVIS/VideoWorld/VideoWorld/data

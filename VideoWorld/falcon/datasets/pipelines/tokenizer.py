@@ -469,18 +469,11 @@ class TokenizerforGoImage(BaseTransform):
        
         if use_action:
             self.tokenizer.add_tokens([DEFAULT_ACT_START_TOKEN, DEFAULT_ACT_TOKEN, DEFAULT_ACT_END_TOKEN], special_tokens=True)
-            # for i in range(64000):
-            #     self.tokenizer.add_tokens(['<{}>'.format(str(i))], special_tokens=True)
-        
-        # import pdb;pdb.set_trace()
+            
     def transform(self, results):
-        # import pdb;pdb.set_trace()
-    # 
+        # import pdb;pdb.set_trace() 
         pos = -1 if self.padding_side == 'left' else 0
-        # IMAGE_TOKEN_INDEX = self.tokenize(DEFAULT_IMAGE_TOKEN).input_ids[0][pos].item()
-        # MASK_TOKEN_INDEX = self.tokenize(DEFAULT_MASK_TOKEN).input_ids[0][pos].item()
         data_mode = results['data_mode']
-        # winner = 'B' if self.test_mode and self.game_type == 'go_battle' else winner
         roles = ['b', 'w']
         text = []
         ignore_text = []
@@ -506,20 +499,18 @@ class TokenizerforGoImage(BaseTransform):
         input_mask = inputs.get(self.input_mask, None)
         token_ids[token_ids==IMAGE_TOKEN_INDEX] = -200
         token_ids[token_ids==ACT_TOKEN_INDEX] = -400
-        act_token_pos = torch.where(token_ids[0]==-400)[0][0].item()
-        # import pdb;pdb.set_trace()
-        token_ids = torch.cat([token_ids[:, :act_token_pos], move_ids+len(self.tokenizer), token_ids[:, act_token_pos+1:]], dim=1)
-        input_mask = torch.cat([input_mask[:, :act_token_pos], torch.ones_like(move_ids), input_mask[:, act_token_pos+1:]], dim=1)
+        
+        if not self.test_mode:
+            act_token_pos = torch.where(token_ids[0]==-400)[0][0].item()
+            token_ids = torch.cat([token_ids[:, :act_token_pos], move_ids+len(self.tokenizer), token_ids[:, act_token_pos+1:]], dim=1)
+            input_mask = torch.cat([input_mask[:, :act_token_pos], torch.ones_like(move_ids), input_mask[:, act_token_pos+1:]], dim=1)
         if self.pred_image:
             token_ids[token_ids==MASK_TOKEN_INDEX] = -300
         
         results[self.token_ids] = token_ids.squeeze(dim=0)
         results[self.input_mask] = input_mask.squeeze(dim=0)
         
-        # results['ignore_token_pos'] = ignore_token_pos
-        # results['extra_labels'] = token_ids.squeeze(dim=0) if results['extra_labels'] is None else results['extra_labels']
-        # import pdb;pdb.set_trace()
-        # print(text)
+     
         return results
 
     def __repr__(self):
@@ -573,14 +564,11 @@ class TokenizerforCALVIN(BaseTransform):
         
         self.use_state = use_state
         
-        # if use_action:
         self.tokenizer.add_tokens([DEFAULT_ACT_START_TOKEN, DEFAULT_ACT_TOKEN,  DEFAULT_ACT_END_TOKEN], special_tokens=True)
             
-          
-        # import pdb;pdb.set_trace()
+        
     def transform(self, results):
-        # import pdb;pdb.set_trace()
-
+        
         pos = -1 if self.padding_side == 'left' else 0
 
         roles = ['b', 'w']
@@ -595,9 +583,7 @@ class TokenizerforCALVIN(BaseTransform):
         
         pred_tokens = ''.join([DEFAULT_ACT_START_TOKEN + _move + DEFAULT_ACT_END_TOKEN + DEFAULT_IM_START_TOKEN + DEFAULT_MASK_TOKEN + DEFAULT_IM_END_TOKEN] * self.pred_image_num)
         text = text + DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN + pred_tokens if not self.test_mode else  DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN + DEFAULT_IM_START_TOKEN 
-        # if self.pred_image_num == 0:
-        #     text = text + DEFAULT_ACT_START_TOKEN + _move + DEFAULT_ACT_END_TOKEN
-
+        
         MASK_TOKEN_INDEX = self.tokenize(DEFAULT_MASK_TOKEN).input_ids[0][0].item()  
         IMAGE_TOKEN_INDEX = self.tokenize(DEFAULT_IMAGE_TOKEN).input_ids[0][0].item()
         ACT_TOKEN_INDEX = self.tokenize(DEFAULT_ACT_TOKEN).input_ids[0][0].item()
@@ -605,17 +591,14 @@ class TokenizerforCALVIN(BaseTransform):
         token_ids = inputs.get(self.token_ids, None)
         input_mask = inputs.get(self.input_mask, None)
         token_ids[token_ids==IMAGE_TOKEN_INDEX] = -200
-        # token_ids[token_ids==ACT_TOKEN_INDEX] = -400
+        
         if self.pred_image:
             token_ids[token_ids==MASK_TOKEN_INDEX] = -300
         
         results[self.token_ids] = token_ids.squeeze(dim=0)
         results[self.input_mask] = input_mask.squeeze(dim=0)
         results['action_idx'] = ACT_TOKEN_INDEX
-        # results['ignore_token_pos'] = ignore_token_pos
-        # results['extra_labels'] = token_ids.squeeze(dim=0) if results['extra_labels'] is None else results['extra_labels']
-        # import pdb;pdb.set_trace()
-        # print(text)
+ 
         return results
 
     def __repr__(self):
@@ -655,7 +638,6 @@ class TokenizerforCALVINEnvVal(BaseTransform):
         self.test_with_act = test_with_act
         self.use_act_start_end = use_act_start_end
         self.use_lang_embed = use_lang_embed
-        # import pdb;pdb.set_trace()
         assert isinstance(
             pretrained, str
         ), f'Autokenizer must has pretrained models, but get {pretrained}'
@@ -674,19 +656,16 @@ class TokenizerforCALVINEnvVal(BaseTransform):
         
         self.use_state = use_state
         
-        # if use_action:
+    
         self.tokenizer.add_tokens([DEFAULT_ACT_START_TOKEN, DEFAULT_ACT_TOKEN,  DEFAULT_ACT_END_TOKEN], special_tokens=True)
             
-        
-        # import pdb;pdb.set_trace()
+
     def transform(self, results):
-        # import pdb;pdb.set_trace()
+ 
 
         pos = -1 if self.padding_side == 'left' else 0
         task_seqs = results[self.input_text]
-        # text = task_seq[0]
-        # sub_task = task_seq[1:]
-  
+        
 
         MASK_TOKEN_INDEX = self.tokenize(DEFAULT_MASK_TOKEN).input_ids[0][0].item()  
         IMAGE_TOKEN_INDEX = self.tokenize(DEFAULT_IMAGE_TOKEN).input_ids[0][0].item()
@@ -715,10 +694,7 @@ class TokenizerforCALVINEnvVal(BaseTransform):
         results[self.input_mask] = torch.stack(seq_input_mask)
 
         results['action_idx'] = ACT_TOKEN_INDEX
-        # results['ignore_token_pos'] = ignore_token_pos
-        # results['extra_labels'] = token_ids.squeeze(dim=0) if results['extra_labels'] is None else results['extra_labels']
-        # import pdb;pdb.set_trace()
-        # print(text)
+       
         return results
 
     def __repr__(self):

@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 default_scope = 'falcon'
-# model settings
-#  mIoU/mIoU: 0.4611
 level='9d'
 model = dict(
-    # work_dir="./work_dirs/configs/fsq_go_pred_image_internlm",
     work_dir="/opt/tiger/",
     pred_image=True,
     pred_action=True,
@@ -38,7 +35,7 @@ model = dict(
         type='InternLMGenModel',
         pretrain_path='work_dirs/init/Intern_300m',
         vq_num=64000,
-        sepcial_token_num=3+81+2,
+        sepcial_token_num=3+64000+2,
         use_text=True
     ),
     quantizer=dict(
@@ -65,11 +62,6 @@ img_norm_cfg = dict(
     norm_pred_label=True)
 
 train_pipeline = [
-    # dict(type='LoadADE20KMask', prefix="images"),
-    # dict(type='Resize', scale=(256, 256), backend='pillow'),
-    # dict(type='MaskPromptSelectADE20k', only_mask=True),
-    # dict(type='RandomResizedCrop', scale=2, crop_ratio_range=(0.8, 1.0)),
-    # dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
     dict(
         type='TokenizerforGoImage',
@@ -84,21 +76,11 @@ train_pipeline = [
         is_llama=True,
         use_action=True
     ),
-    # dict(
-    #     type='LlamaTokenizerforMask',
-    #     pretrained='./tokenizer/llama/open_3B_v2/',
-    #     input_text='prompt',
-    # ),
     dict(type='Collect', keys=['img', *aux_info]),
     dict(type='ToTensor', keys=['img', *aux_info]),
 ]
 
 test_pipeline = [
-    # dict(type='LoadADE20KMask', prefix="images"),
-    # dict(type='Resize', scale=(256, 256), backend='pillow'),
-    # dict(type='MaskPromptSelectADE20k', only_mask=True),
-    # dict(type='RandomResizedCrop', scale=2, crop_ratio_range=(0.8, 1.0)),
-    # dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
     dict(
         type='TokenizerforGoImage',
@@ -114,11 +96,6 @@ test_pipeline = [
         is_llama=True,
         use_action=True
     ),
-    # dict(
-    #     type='LlamaTokenizerforMask',
-    #     pretrained='./tokenizer/llama/open_3B_v2/',
-    #     input_text='prompt',
-    # ),
     dict(type='Collect', keys=['img', *test_aux_info]),
     dict(type='ToTensor', keys=['img', *test_to_tensor]),
 ]
@@ -128,10 +105,6 @@ train_dataloader = dict(
     batch_size=16,
     num_workers=4,
     use_web=True,
-    # pin_memory=False,
-    # persistent_workers=False,
-    # sampler=dict(type='InfiniteSampler', shuffle=True),
-    # collate_fn=dict(type='default_collate'),
     dataset=dict(
         type=dataset_type,
         shuffle=True,
@@ -195,20 +168,7 @@ optim_wrapper = dict(
     clip_grad=dict(max_norm=0.2),
     paramwise_cfg=paramwise_options,
 )
-# strategy = dict(
-#     type='FSDPStrategy',
-#     state_dict_type='FULL_STATE_DICT',
-#     accumulative_counts=1,
-#     state_dict_config=dict(
-#         type='FullStateDictConfig', offload_to_cpu=True, rank0_only=True),
-#     optim_state_dict_config=dict(
-#         type='FullOptimStateDictConfig', offload_to_cpu=True, rank0_only=True),
-#     fsdp_kwargs=dict(
-#         # mixed_precision='f',
-#         fsdp_auto_wrap_policy='llama_auto_wrap_policy',
-#         sync_module_states=True,
-#         backward_prefetch='pre',
-#         use_orig_params=True))
+
 
 param_scheduler = [
     dict(
@@ -235,10 +195,10 @@ train_cfg = dict(
     val_interval=100000
 )
 val_cfg = dict()
-val_evaluator = dict(type='ChessEva', collect_device='cpu', collect_dir='./work_dirs/multinode_test')
+val_evaluator = dict(type='GoEva', collect_device='cpu', collect_dir='./work_dirs/multinode_test')
 
 test_cfg = dict()
-test_evaluator = dict(type='ChessEva', collect_device='cpu', collect_dir='./work_dirs/multinode_test')
+test_evaluator = dict(type='GoEva', collect_device='cpu', collect_dir='./work_dirs/multinode_test')
 
 # runtime settings
 default_hooks = dict(
@@ -262,12 +222,7 @@ log_processor = dict(
     by_epoch=False,
     window_size=10,
     custom_cfg=[dict(data_src='', method='mean', window_size='global')])
-#
-# vis_backends = [dict(type='LocalVisBackend')]
-# visualizer = dict(
-#     type='SelfSupVisualizer', vis_backends=vis_backends, name='visualizer')
 
-# custom_hooks = [dict(type='SelfSupVisualizationHook', interval=1)]
 
 log_level = 'INFO'
 load_from = None
