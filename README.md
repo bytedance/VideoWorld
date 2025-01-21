@@ -14,11 +14,11 @@
 
 # Highlight
 
-1. We explore for the first time if video generation models can learn sophisticated knowledge and observe two key findings: i) merely observing videos can suffice to master complex tasks, and ii) a compact, informative representation greatly boost learning efficiency of reasoning capabilities, and we also validate this in robotic scenarios.
+👉 We explore, for the first time, whether video generation models can learn knowledge and observe two key findings: i) merely observing videos suffices to learn complex tasks, and ii) compact representations of visual changes greatly enhance knowledge learning.
 
-2. We propose VideoWorld, leveraging a latent dynamic model to condense future visual changes, thereby enhancing the efficiency and effectiveness of video learning. We test its performance in both Go and robotic scenarios.
+👉 We propose VideoWorld, leveraging a latent dynamics model to represent multi-step visual changes, boosting both efficiency and effectiveness of knowledge acquisition.
 
-3. We construct Video-GoBench, a large-scale Go video dataset, facilitating model training and evaluation for future research on knowledge learning from pure videos.
+👉 We construct Video-GoBench, a large-scale video-based Go dataset for training and evaluation, facilitating future research on knowledge learning from pure videos.
 
 # Introduction
 This work explores whether a deep generative model can learn complex knowledge solely from visual input, in contrast to the prevalent focus on text-based models like large language models (LLMs). We develop \emph{VideoWorld}, an autoregressive video generation model trained on unlabeled video data, and test its knowledge acquisition abilities in video-based Go and robotic control tasks. Our experiments reveal two key findings: (1) video-only training provides sufficient information for learning knowledge, including rules, reasoning and planning capabilities, and (2) the representation of visual changes is crucial for
