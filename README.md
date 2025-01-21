@@ -25,7 +25,7 @@ This work explores whether a deep generative model can learn complex knowledge s
 knowledge learning. To improve both the efficiency and efficacy of knowledge learning, we introduce the Latent Dynamics Model (LDM) as a key component of VideoWorld. Remarkably, VideoWorld reaches a 5-dan professional level in the Video-GoBench with just a 300-million-parameter model, without relying on search algorithms or reward mechanisms typical in reinforcement learning. In robotic tasks, VideoWorld effectively learns diverse control operations and generalizes across environments, approaching the performance of oracle models in CALVIN and RLBench. This study opens new avenues for knowledge acquisition from visual data, with all code, data, and models to be open-sourced for further research.
 
 # Video
-[![IMAGE ALT TEXT](./figs/ytb.png)](https://www.youtube.com/watch?v=Cdi-qikbEzk&t=1s "VideoWorld Demo")
+[![IMAGE ALT TEXT](./figs/ytb_new.png)](https://www.youtube.com/watch?v=y_TT4dtIPXA "VideoWorld Demo")
 
 # Architecture
 
