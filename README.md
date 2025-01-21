@@ -55,7 +55,10 @@ bash install.sh
 # Inference
 ### Go Battle
 VideoWorld relies on the Katago Go engine. We provide scripts to facilitate battles against our model; install Katago to engage in these matches.
+
+We provide a version of the weights for playing against humans in https://huggingface.co/maverickrzw/VideoWorld-GoBattle. 
 ```
+# Please place the weight in the path: ./VideoWorld/work_dirs/go_battle.pth
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 bash install_katago.sh 
 ```
