@@ -128,18 +128,7 @@ val_dataloader = dict(
                 level_list=['all'],
                 length=30,
                 level=level),
-                
-            # dict(type=dataset_type,
-            #     data_root='/opt/tiger/PointVIS/opt/tiger/PointVIS/go_dataset_size9/sgf_files',
-            #     ann_file='data/go_dataset_size9/go_dataset_9x9_900k_val_battle_2d.json',
-            #     pipeline=test_pipeline,
-            #     level_list = ['all']),
-
-            # dict(type='GoDataset',
-            #     data_root='/opt/tiger/PointVIS/opt/tiger/PointVIS/go_dataset_size9/sgf_files',
-            #     ann_file='data/go_dataset_size9/go_dataset_9x9_900k_val_battle_18k_100.json',
-            #     pipeline=test_pipeline,
-            #     level_list = ['all']),
+       
         ]
     ),
     sampler=dict(type='DefaultSampler', shuffle=False),
