@@ -4,7 +4,7 @@
 
 > Beijing Jiaotong University, University of Science and Technology of China, ByteDance Seed
 
-<font size=7><div align='center' > <a href=''>**Paper**</a> | <a href="https://maverickren.github.io/VideoWorld.github.io">**Project Page**</a> | [**Installation**](#Install) | [**Training**](#training) | [**Inference**](#inference) </div></font>
+<font size=7><div align='center' > <a href=''>**Paper**</a> | <a href="https://maverickren.github.io/VideoWorld.github.io">**Project Page**</a> | [**Installation**](#Install) | [**Training**](#training) | [**Inference**](#inference) </div></font> | <a href="https://huggingface.co/datasets/maverickrzw/VideoGo-Bench">**Video-GoBench**</a>
 
 <img width="1000" alt="image" src='figs/figure1.png'>
 
