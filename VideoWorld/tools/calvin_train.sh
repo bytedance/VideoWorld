@@ -17,7 +17,6 @@ GPUS=1
 NNODES=1
 NODE_RANK=0
 PORT=54213
-CHECKPOINT='./work_dirs/calvin_model.pth'
 MASTER_ADDR=${MASTER_ADDR:-"127.0.0.1"}
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 python3 -m torch.distributed.launch \
