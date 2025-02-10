@@ -115,6 +115,7 @@ train_dataloader = dict(
         interval_range=[1, 1],
         pipeline=train_pipeline,
         use_hand=True,
+        la_path=la_data_path
         ),
     )
 
