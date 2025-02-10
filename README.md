@@ -95,10 +95,13 @@ Download CALVIN dataset follow the official instructions and organize it as foll
 ```
 ├── VideoWorld
 │   ├── LDM
-│   │   └── data
-│   └──       └── calvin
+│   │   │── data
+│   │   │    └── calvin
+│   │   └── work_dirs
+│   │        └── magvit_init.pth
+│   └──       
 ```
-Use the script ./LDM/tools/calvin_ldm_train.sh to initiate LDM training. Upon completion, the latent codes on the training set will be automatically saved to ./LDM/work_dirs/calvin_ldm_results.pth, and the UMAP visualization of the latent codes will also be generated.
+Use the script ./LDM/tools/calvin_ldm_train.sh to initiate LDM training. Training requires loading the [Magvit weights](https://huggingface.co/maverickrzw/VideoWorld_CALVIN/tree/main) we pre-trained on natural image reconstruction as initialization. Upon completion, the latent codes on the training set will be automatically saved to ./LDM/work_dirs/calvin_ldm_results.pth, and the UMAP visualization of the latent codes will also be generated.
 ```
 cd LDM 
 bash ./tools/calvin_ldm_train.sh

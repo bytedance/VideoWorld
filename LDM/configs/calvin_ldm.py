@@ -113,7 +113,7 @@ test_pipeline = [
     ]
 data_root = "./data/calvin/task_ABCD_D/training"
 train_dataloader = dict(
-    batch_size=1,
+    batch_size=4,
     num_workers=4,
     drop_last=True,
     dataset=dict(
@@ -163,13 +163,13 @@ train_cfg = dict(by_epoch=False, max_iters=500000,val_begin=1, val_interval=5000
 
 
 metrics = [
-    dict(
-        type='FVD',
-        prefix='FVD',
-        fake_nums=19772,
-        inception_path='./work_dirs/init/fvd/i3d_torchscript.pt',
-        inception_style='StyleGAN',
-        sample_model='ema'),
+    # dict(
+    #     type='FVD',
+    #     prefix='FVD',
+    #     fake_nums=19772,
+    #     inception_path='./work_dirs/init/fvd/i3d_torchscript.pt',
+    #     inception_style='StyleGAN',
+    #     sample_model='ema'),
 ]
 # config for val
 val_cfg = dict(type='MultiValLoop')
@@ -180,7 +180,7 @@ test_cfg = dict()
 test_evaluator = dict(type='LAFeatMFMetric',collect_device='cpu', la_num = 729, gt_act_num = 81)
 
 # load from which checkpoint
-load_from = './work_dirs/init/magvit/iter_332800_new.pth' # load_from=None
+load_from = './work_dirs/magvit_init.pth' # load_from=None
 # load_from = None
 # whether to resume training from the loaded checkpoint
 resume = False

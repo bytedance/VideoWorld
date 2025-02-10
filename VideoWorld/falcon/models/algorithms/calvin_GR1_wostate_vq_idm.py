@@ -354,6 +354,141 @@ class VideoWorldRobotics(BaseModel):
         self.rollout_step_counter = 0
         self.la_indice_list = []
     
+    def forward_train(self, img, input_ids, pred_label=None, attention_mask=None, **kwargs):
+        states = kwargs['state'] #B, T, 7
+        actions = kwargs['action'] #B, T, 7
+        action_idx = kwargs['action_idx'][0][0]
+        la_actions = kwargs.get('la_action', None) #B, T-1
+        lang_emb = kwargs.get('lang_emb', None) #B, T, 384
+        img_hands = kwargs.get('hand', None)
+        # arm_state = states[:, :, :6]
+        # arm_action = actions[:, :, :6]
+        # gripper_state = states[:, :, -1:]
+        # gripper_action = actions[:, :, -1:]
+        # gripper_state[gripper_state == -1] = 0
+        # gripper_action[gripper_action == -1] = 0
+
+        # gripper_state = gripper_state[:, :, 0].long()
+        # gripper_state = F.one_hot(gripper_state, num_classes=2).float() #B, T, 2
+
+        langs = kwargs.pop('prompt')
+        lang_emb = []
+        for lang in langs:
+            tokenized_lang = self.tokenizer(lang).to('cuda')
+            emb = self.model_clip.encode_text(tokenized_lang)
+            lang_emb.append(emb)
+        lang_embeddings = torch.stack(lang_emb) #B, 1, 512
+        lang_embeddings = lang_embeddings / (lang_embeddings.norm(dim=1, keepdim=True) + 1e-6) # normalization
+        lang_embeddings = self.embed_lang(lang_embeddings.float())  # (b, h)
+
+        rgb = img
+        hand_rgb = img_hands
+        # self.visualize(rgb, hand_rgb)
+        batch_size, sequence_length, c, h, w = img.shape
+        attention_mask = torch.ones(batch_size, sequence_length).long().to(rgb.device)
+        label = torch.ones(batch_size, sequence_length).long().to(rgb.device) * -100
+
+        visual_ids = self.encode_image(img) #B, l, 16
+        visual_ids_hand = self.encode_image(img_hands) #B, l, 16
+       
+        if self.use_img_start:
+            img_start_ids = torch.ones(batch_size, sequence_length, 1).long().to(visual_ids.device) * 64000
+            img_end_ids = torch.ones(batch_size, sequence_length, 1).long().to(visual_ids.device) * 64001
+            visual_ids = torch.cat([img_start_ids, visual_ids, visual_ids_hand, img_end_ids], dim=2)
+        else:
+            visual_ids = torch.cat([visual_ids, visual_ids_hand], dim=2)
+        # concat la_actions into visual ids
+        # import pdb;pdb.set_trace()
+        if self.use_la_action:
+            la_actions = la_actions + 64002
+            pad_len = 1 if la_actions.shape[1] < visual_ids.shape[1] else 0
+            if la_actions.ndim == 3:
+                la_actions = torch.cat([la_actions, torch.zeros(batch_size, pad_len, la_actions.shape[-1]).long().to(visual_ids.device)], dim=1)
+            else:
+                la_actions = torch.cat([la_actions, torch.zeros(batch_size, pad_len).long().to(visual_ids.device)], dim=1).unsqueeze(-1) 
+            visual_ids = torch.cat([visual_ids, la_actions], dim=2)
+
+        obs_embeddings = self.embed_func()(visual_ids) #b, l, 16, h
+        lang_embeddings = lang_embeddings.view(batch_size, 1, 1, -1).repeat(1, sequence_length, 1, 1)
+       
+        stacked_inputs = torch.cat((lang_embeddings, obs_embeddings), dim=2)  # (b, l, n_tokens, h)
+        
+
+        if self.act_pred:
+            action_queries = self.action_queries.weight  # (1, h)
+            action_queries = action_queries.view(1, 1, 1, self.hidden_size).repeat(batch_size, sequence_length, 1, 1)  # (b, l, 1, h)
+            stacked_inputs = torch.cat((stacked_inputs, action_queries), dim=2)  # (b, l, n_tokens, h)
+
+        # Number of tokens
+        n_lang_tokens = 1
+        n_state_tokens = 0
+        n_patch_tokens = 0
+        n_obs_tokens = 17 if self.use_img_start else 16
+        n_hand_patch_tokens = 0
+        n_hand_obs_tokens = 17 if self.use_img_start else 16
+        n_tokens = n_lang_tokens + n_state_tokens + n_patch_tokens + n_obs_tokens
+        if self.use_hand_rgb:
+            n_tokens += n_hand_obs_tokens
+            n_tokens += n_hand_patch_tokens
+        n_act_pred_tokens = 1
+        if self.act_pred or self.use_la_action:
+            act_query_token_start_i = n_tokens
+            n_tokens += self.la_act_scope
+        
+        obs_tokens_start_i = n_lang_tokens + n_state_tokens + n_patch_tokens
+        # Layer norm
+        stacked_inputs = stacked_inputs.reshape(batch_size, n_tokens * sequence_length, self.hidden_size)
+        # stacked_inputs = self.embed_ln(stacked_inputs)
+
+        # Attention mask
+        stacked_label = label.view(batch_size, sequence_length, 1)
+        stacked_attention_mask = attention_mask.view(batch_size, sequence_length, 1)
+        if self.use_hand_rgb:
+            if not self.use_la_action:
+                stacked_label = stacked_label.repeat(1, 1, n_lang_tokens + n_state_tokens + n_hand_patch_tokens + n_hand_obs_tokens + n_patch_tokens + n_obs_tokens)
+                stacked_attention_mask = stacked_attention_mask.repeat(1, 1, n_lang_tokens + n_state_tokens + n_hand_patch_tokens + n_hand_obs_tokens + n_patch_tokens + n_obs_tokens)
+                stacked_label[:, :, obs_tokens_start_i:obs_tokens_start_i+(n_obs_tokens+n_hand_obs_tokens)] = visual_ids
+            else:
+                stacked_label = stacked_label.repeat(1, 1, n_tokens)
+                stacked_attention_mask = stacked_attention_mask.repeat(1, 1, n_tokens)
+                stacked_attention_mask[:, -1:, -1:] = 0
+                stacked_label[:, :, obs_tokens_start_i:] = visual_ids
+                stacked_label[:, -1:, -1:] = -100
+        if self.act_pred:
+            act_query_label = torch.ones((batch_size, sequence_length, n_act_pred_tokens), dtype=torch.long).cuda() * -100
+            act_query_attention_mask = torch.zeros((batch_size, sequence_length, n_act_pred_tokens), dtype=torch.long).cuda()
+            stacked_attention_mask = torch.cat((stacked_attention_mask, act_query_attention_mask), dim=2)
+            stacked_label = torch.cat((stacked_label, act_query_label),dim=2)
+
+        stacked_attention_mask = stacked_attention_mask.reshape(batch_size, n_tokens * sequence_length)
+        stacked_label = stacked_label.reshape(batch_size, n_tokens * sequence_length)
+  
+        logits, loss, hidden_state = self.neck(inputs_embeds=stacked_inputs, attention_mask=stacked_attention_mask, labels=stacked_label, return_dict=True)
+        x = hidden_state.reshape(batch_size, sequence_length, n_tokens, self.hidden_size)
+
+        # import pdb;pdb.set_trace()
+        if self.act_pred:
+            action_embedding = x[:, :, act_query_token_start_i:act_query_token_start_i+self.la_act_scope] if not self.fix_act_pred else x[:, :, act_query_token_start_i-1:act_query_token_start_i+self.la_act_scope]
+            for pred_act_mlp in self.pred_act_mlps:
+                action_embedding = pred_act_mlp(action_embedding)
+            # action_embedding = action_embedding.mean(dim=2)
+            action_embedding = self.act_embed_fuse(action_embedding.permute(0, 1, 3, 2)).squeeze(-1)
+            arm_action_preds = self.pred_arm_act(action_embedding)  # (b, l, act_dim - 1)
+            gripper_action_preds = self.pred_gripper_act(action_embedding)  # (b, l, 1)
+            loss_state = self.state_loss(arm_action_preds, arm_action)
+            loss_gripper = self.gripper_loss(gripper_action_preds, gripper_action)
+            losses = { "loss_v": loss, "loss_state": loss_state, "loss_gripper": loss_gripper}
+        elif self.la_act_pred:
+            losses = { "loss_v": loss}
+
+        # if self.sup_actions:
+
+        # loss_rgb = self.rgb_loss(obs_preds[:, :-1], obs_targets[:, 1:])
+        # loss_hand_rgb = self.rgb_loss(obs_hand_preds[:, :-1], obs_hand_targets[:, 1:])
+        # print("--------", input_ids[0], input_ids[1], "--------")
+
+        return losses
+
 
     def rollout_pred_rgb(self, img, seq_input_ids, pred_label=None, seq_attention_mask=None, index=None, **kwargs):
         # import pdb;pdb.set_trace()

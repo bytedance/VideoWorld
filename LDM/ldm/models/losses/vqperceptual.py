@@ -23,6 +23,9 @@ from ldm.registry import MODELS
 
 
 
+CKPT_MAP = {
+    "vgg_lpips": "vgg.pth"
+}
 
 
 def download(url, local_path, chunk_size=1024):
@@ -74,6 +77,7 @@ class LPIPS(nn.Module):
         self.lins = nn.ModuleList(lins)
         root = '../work_dirs/init/lpips'
         ckpt = os.path.join(root, 'vgg.pth')
+        
         if not os.path.exists(ckpt):
             download("https://heibox.uni-heidelberg.de/f/607503859c864bc1b30b/?dl=1", ckpt)
         self.load_state_dict(torch.load(ckpt, map_location=torch.device("cpu")), strict=False)
@@ -81,15 +85,17 @@ class LPIPS(nn.Module):
             param.requires_grad = False            
 
     def load_from_pretrained(self, name="vgg_lpips"):
-        ckpt = os.path.join(name, CKPT_MAP[name])
+        ckpt = os.path.join('../work_dirs/init/lpips', CKPT_MAP[name])
+        if not os.path.exists(ckpt):
+            download("https://heibox.uni-heidelberg.de/f/607503859c864bc1b30b/?dl=1", ckpt)
         self.load_state_dict(torch.load(ckpt, map_location=torch.device("cpu")), strict=False)
         
 
     @classmethod
     def from_pretrained(cls, name="vgg_lpips"):
         model = cls()
-        ckpt = os.path.join(name, CKPT_MAP[name])
-        ckpt = os.path.join(name, 'vgg.pth')
+        ckpt = os.path.join('work_dirs/init/lpips', CKPT_MAP[name])
+        # ckpt = os.path.join(name, 'vgg.pth')
         model.load_state_dict(torch.load(ckpt, map_location=torch.device("cpu")), strict=False)
         return model
 
@@ -100,14 +106,14 @@ class LPIPS(nn.Module):
         feats0, feats1, diffs = {}, {}, {}
         lins = [self.cos0, self.cos1, self.cos2, self.cos3, self.cos4]
         for kk in range(len(self.channels)):
-        lins = [self.lins[0], self.lins[1], self.lins[2], self.lins[3], self.lins[4]]
+            lins = [self.lins[0], self.lins[1], self.lins[2], self.lins[3], self.lins[4]]
         for kk in range(len(self.channels)):
             feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
         res = [spatial_average(lins[kk].model(diffs[kk]), keepdim=True) for kk in range(len(self.channels))]
         res = [spatial_average(lins[kk].model(diffs[kk]), keepdim=True) for kk in range(len(self.channels))]
         val = res[0]
-        for l in range(1, len(self.channels)):
+        # for l in range(1, len(self.channels)):
         for l in range(1, len(self.channels)):
             val += res[l]
         return val

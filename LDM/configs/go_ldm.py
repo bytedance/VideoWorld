@@ -185,8 +185,8 @@ test_cfg = dict()
 test_evaluator = dict(type='LAGoFeatMetric',collect_device='cpu', la_num = 729, gt_act_num = 81, gt_select_frame=[1])
 
 # load from which checkpoint
-load_from = '/opt/tiger/mmagicinit/ldm/work_dirs/go_2frame_sepqformer_likebefore_interval5/iter_64000_new.pth' # load_from=None
-# load_from = None
+# load_from = '/opt/tiger/mmagicinit/ldm/work_dirs/go_2frame_sepqformer_likebefore_interval5/iter_64000_new.pth' # load_from=None
+load_from = './work_dirs/magvit_init.pth'
 # whether to resume training from the loaded checkpoint
 resume = False
 

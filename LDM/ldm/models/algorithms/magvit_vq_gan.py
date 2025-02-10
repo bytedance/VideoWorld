@@ -439,7 +439,7 @@ class MagVitVQGAN(BaseGan):
             outputs = outputs.squeeze(dim=2)
         # outputs is BGR
         outputs = self.data_preprocessor.destruct(outputs, data_samples)
-        import pdb;pdb.set_trace()
+       
         gen_sample = DataSample()
         gen_sample.indice = indice
         gen_sample.fake_img = outputs

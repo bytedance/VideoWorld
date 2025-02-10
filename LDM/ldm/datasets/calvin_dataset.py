@@ -245,8 +245,8 @@ class CALVINVideoValDataset(Dataset):
         lang_info_path = osp.join(data_root, 'lang_annotations/auto_lang_ann.npy')
         annotations = np.load(lang_info_path, allow_pickle=True).item()
         annotations = list(zip(annotations["info"]["indx"], annotations["language"]["ann"])) #((np.int64(1401659), np.int64(1401723)), 'move the door all the way to the right')
-        length = len(annotations) // 3
-        annotations = annotations[(length*2):]
+        # length = len(annotations) // 3
+        annotations = annotations[:2]
         data_paths = []
         langs = []
         clip_start_end_ids = []

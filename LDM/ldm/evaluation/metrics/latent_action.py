@@ -309,7 +309,7 @@ class LAFeatMFMetric(BaseMetric):
         max_pos = 0.02
         max_orn = 0.05
         for i, data_sample in enumerate(data_samples):
-            indice = data_sample['indice'].squeeze().item()
+            indice = data_sample['indice'].squeeze()
             encode_feat = data_sample['encode_feat'].squeeze(2, 3) #C, T
             state = data_batch['data_samples'][i].states[0]
             deltas = torch.stack([s1 - state[0] for s1 in state[1:]])
@@ -370,10 +370,7 @@ class LAFeatMFMetric(BaseMetric):
         from matplotlib.colors import LinearSegmentedColormap
         metrics = {}
         bin_length = 0.1
-        # rel_x_dict = defaultdict(list)
-        # rel_y_dict = defaultdict(list)
-        # rel_z_dict = defaultdict(list)
-
+       
         torch.save(results, './work_dirs/calvin_ldm_results.pth')
     
         rel_x_list = []
@@ -403,16 +400,6 @@ class LAFeatMFMetric(BaseMetric):
         # 创建颜色映射对象
         cmap = LinearSegmentedColormap.from_list("gradient", [start_color, middle_color, end_color], N=20)
         colors = cmap(np.linspace(0, 1, 20))
-
-        # act_colors = generate_distinct_colors(len(action_types)+1)
-        # fig, ax = plt.subplots(figsize=(6, 2))
-        # for i, color in enumerate(act_colors):
-        #     rect = patches.Rectangle((i, 0), 1, 1, linewidth=1, edgecolor='none', facecolor=color)
-        #     ax.add_patch(rect)
-        # ax.set_xlim(0, len(colors))
-        # ax.set_ylim(0, 1)
-        # ax.axis('off')
-        # plt.savefig('./work_dirscolor_blocks.png', dpi=300)
 
         action_ids = self.gen_action_id(action_types, results)
         for i, item in enumerate(results):
@@ -469,12 +456,6 @@ class LAFeatMFMetric(BaseMetric):
             self.draw_tsne(t_sne_features, gripper_color[fi], dir='./work_dirs', tag=f'gripper_f{fi+1}')
             self.draw_tsne(t_sne_features, act_label_colors, dir='./work_dirs', tag=f'act_f{fi+1}')
  
-
-        # for ai, A2L_dict in enumerate(A2L_dict_list):
-        #     for la in A2L_dict:
-        #         A2L_dict[la] = A2L_dict[la] / A2LNums[ai]
-        # with open('./work_dirsla_test.json', 'w') as f:
-        #     json.dump(A2L_dict_list, f)
         return metrics
 
 

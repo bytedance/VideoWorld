@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #!/usr/bin/env bash
-CONFIG="./configs/calvin_ldm_debug.py"
+CONFIG="./configs/calvin_train_debug.py"
 GPUS=1
 NNODES=1
 NODE_RANK=0
-PORT=25494
+PORT=54213
+CHECKPOINT='./work_dirs/calvin_model.pth'
 MASTER_ADDR=${MASTER_ADDR:-"127.0.0.1"}
-
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 python3 -m torch.distributed.launch \
     --nnodes=$NNODES \
@@ -26,6 +26,5 @@ python3 -m torch.distributed.launch \
     --master_addr=$MASTER_ADDR \
     --nproc_per_node=$GPUS \
     --master_port=$PORT \
-    $(dirname "$0")/train.py  \
-    $CONFIG \
-    --launcher pytorch ${@:3}
+    $(dirname "$0")/test.py $CONFIG $CHECKPOINT --launcher pytorch ${@:3}
+
