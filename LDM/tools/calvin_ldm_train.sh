@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #!/usr/bin/env bash
-CONFIG="./configs/calvin_ldm_debug.py"
+CONFIG="./configs/calvin_ldm.py"
 GPUS=1
 NNODES=1
 NODE_RANK=0

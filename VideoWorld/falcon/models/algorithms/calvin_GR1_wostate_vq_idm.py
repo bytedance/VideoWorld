@@ -466,32 +466,13 @@ class VideoWorldRobotics(BaseModel):
         logits, loss, hidden_state = self.neck(inputs_embeds=stacked_inputs, attention_mask=stacked_attention_mask, labels=stacked_label, return_dict=True)
         x = hidden_state.reshape(batch_size, sequence_length, n_tokens, self.hidden_size)
 
-        # import pdb;pdb.set_trace()
-        if self.act_pred:
-            action_embedding = x[:, :, act_query_token_start_i:act_query_token_start_i+self.la_act_scope] if not self.fix_act_pred else x[:, :, act_query_token_start_i-1:act_query_token_start_i+self.la_act_scope]
-            for pred_act_mlp in self.pred_act_mlps:
-                action_embedding = pred_act_mlp(action_embedding)
-            # action_embedding = action_embedding.mean(dim=2)
-            action_embedding = self.act_embed_fuse(action_embedding.permute(0, 1, 3, 2)).squeeze(-1)
-            arm_action_preds = self.pred_arm_act(action_embedding)  # (b, l, act_dim - 1)
-            gripper_action_preds = self.pred_gripper_act(action_embedding)  # (b, l, 1)
-            loss_state = self.state_loss(arm_action_preds, arm_action)
-            loss_gripper = self.gripper_loss(gripper_action_preds, gripper_action)
-            losses = { "loss_v": loss, "loss_state": loss_state, "loss_gripper": loss_gripper}
-        elif self.la_act_pred:
-            losses = { "loss_v": loss}
-
-        # if self.sup_actions:
-
-        # loss_rgb = self.rgb_loss(obs_preds[:, :-1], obs_targets[:, 1:])
-        # loss_hand_rgb = self.rgb_loss(obs_hand_preds[:, :-1], obs_hand_targets[:, 1:])
-        # print("--------", input_ids[0], input_ids[1], "--------")
+        losses = { "loss_v": loss}
 
         return losses
 
 
     def rollout_pred_rgb(self, img, seq_input_ids, pred_label=None, seq_attention_mask=None, index=None, **kwargs):
-        # import pdb;pdb.set_trace()
+
         import cv2
         scene = kwargs.pop('scene')
         robot_obs = kwargs.pop('state')

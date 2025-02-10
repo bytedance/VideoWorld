@@ -33,12 +33,12 @@ model = dict(
         type='VQGANEncoder',
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='work_dirs/configs/vqgan_fsq_imagenet1k_style-2_256x256_ep60_calvin_16code_hand/iter_460000_new.pth'),
+            checkpoint='./work_dirs/calvin_fsq.pth'),
         width_mults=(1,1,1,2,2,4,4),
     ),
     neck=dict(
         type='InternLMGenModel',
-        pretrain_path='work_dirs/init/Intern_300m',
+        pretrain_path='./work_dirs/Intern_300m',
         vq_num=64000,
         sepcial_token_num=2+64000,
         use_text=False
@@ -128,7 +128,7 @@ val_dataloader = dict(
     # collate_fn=dict(type='default_collate'),
     dataset=dict(
         type='CALVINEnvValDataset',
-        data_root = "/mnt/bn/panxuran/calvin/task_ABCD_D/",
+        data_root = "./data/calvin/task_ABCD_D/",
         pipeline=test_pipeline,
         num_sequences=20),
     )

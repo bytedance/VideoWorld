@@ -27,13 +27,13 @@ model = dict(
         type='VQGANEncoder',
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='work_dirs/init/fsq/vqgan/16code_10000.pth'),
+            checkpoint='./work_dirs/go_fsq.pth'),
         width_mults=(1,1,1,2,2,4,4),
         ),
         
     neck=dict(
         type='InternLMGenModel',
-        pretrain_path='work_dirs/init/Intern_300m',
+        pretrain_path='./work_dirs/Intern_300m',
         vq_num=64000,
         sepcial_token_num=3+64000+2,
         use_text=True
