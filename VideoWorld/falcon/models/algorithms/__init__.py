@@ -16,6 +16,7 @@ from falcon.models.algorithms.IDM import VQInverseDynamicModel, FeatInverseDynam
 from falcon.models.algorithms.calvin_GR1_wostate_vq_idm import VideoWorldRobotics
 from falcon.models.algorithms.go_battle_with_human import VideoWorldGoBattleVSHuman
 from falcon.models.algorithms.go_battle_train_model import VideoWorldGoBattleTrainModel
+from falcon.models.algorithms.go_battle_with_human_woKataGo import VideoWorldGoBattleVSHumanwoKataGo
 # from falcon.models.algorithms.calvin_GR1_wostate_vq_onlyrgb import VQImageTextRGBGenCALVINGR1WOStateVQ
 
 

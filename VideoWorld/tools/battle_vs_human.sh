@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #!/usr/bin/env bash
-CONFIG="./configs/go_battle_vs_human.py"
+export KIVY_NO_ARGS=1
+CONFIG="./configs/go_battle_vs_human_woKataGo.py"  #NOTE: If you'd like to use KataGo for detailed move evaluation and analysis, please use go_battle_vs_human.py.
 GPUS=1
 NNODES=1
 NODE_RANK=0
 PORT=54213
-CHECKPOINT='./work_dirs/go_battle.pth'
+CHECKPOINT='/opt/tiger/PointVIS/VideoWorld/VideoWorld/work_dirs/configs/go_battle_train/iter_990000.pth'
 MASTER_ADDR=${MASTER_ADDR:-"127.0.0.1"}
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 python3 -m torch.distributed.launch \

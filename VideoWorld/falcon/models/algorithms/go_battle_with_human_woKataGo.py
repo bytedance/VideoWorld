@@ -127,7 +127,7 @@ def render_next_state(moves, caps, save_path=None):
 
 
 @MODELS.register_module()
-class VideoWorldGoBattleVSHuman(BaseModel):
+class VideoWorldGoBattleVSHumanwoKataGo(BaseModel):
 
     def __init__(self, vbackbone, neck, head, quantizer, init_cfg=None, pred_image=True, pred_action=False, mode='acc', battle_with_katago=None, kata_ana=False, vq_decoder_cfg={}, max_generate_length=300, work_dir='/opt/tiger', worker_index=0):
         super().__init__(
@@ -191,21 +191,8 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         self.sub_board_size = 9
         self.kata_ana = kata_ana
         self.katago_process = None
-        import pdb;pdb.set_trace()
-        katago_executable = '../KataGo/cpp/katago'  # 或者是 './katago' 如果是在当前目录
-        config_file = './falcon/models/utils/gtp_example.cfg'
-        model_file = './work_dirs/init/katago/kata1-b18c384nbt-s9791399168-d4261348054.bin.gz'
+        
 
-        self.katago_process = subprocess.Popen(
-                [katago_executable, 'gtp', '-config', config_file, '-model', model_file],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                text=True,  # 或者 universal_newlines=True，用于 Python 3.6 及以下版本
-                bufsize=1  # 行缓冲
-            )
-        send_command_and_get_response(self.katago_process, 'boardsize {}'.format(str(9)))
-        send_command_and_get_response(self.katago_process, 'komi 5.5')
-    
         self.worker_index = f'{torch.cuda.current_device()}_{worker_index}'
         os.system(f'mkdir ./visualize/')
         os.system(f'mkdir ./visualize_temp/')
@@ -292,10 +279,9 @@ class VideoWorldGoBattleVSHuman(BaseModel):
         return res
 
     def image_gen_battle(self, img, input_ids, pred_label=None, attention_mask=None, index=0, **kwargs):
-        import pdb;pdb.set_trace()
+        print("\n -------------------------- \nLet's start the game! You will play as White, and VideoWorld will play as Black. VideoWorld will generate a new board state based on your move and store it at the path './visualize'. \n -------------------------- \n")
         kwargs['eos_token_id'] = 50256
-        cur_iter = kwargs.pop('iter', 0)
-        # cur_iter = f'{cur_iter}_{self.worker_index}'
+        cur_iter = len(os.listdir(f'./visualize/'))
         kwargs.pop('data_mode')
         kwargs.pop('level')
         kwargs.pop('katrain_level')
@@ -355,14 +341,15 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                         col = chr(pred_y + 65) if pred_y < 8 else chr(pred_y + 66)
                         row = str(pred_x + 1)
                         pos = col + row
-                    res = self.send_ai_command('play B {}'.format(pos))
-                    if '?' in res:
+                    try:
+                        _, captured = displayboard.play(pred_x, pred_y, 'b')
+                    except:
                         print("Error, retry num {}".format(try_num))
                         try_num += 1
                         continue
                     print("B_move:", pos)
                     moves.append(('b', (pred_x, pred_y)))
-                    _, captured = displayboard.play(pred_x, pred_y, 'b')
+                    # _, captured = displayboard.play(pred_x, pred_y, 'b')
                     caps.append(captured)
 
                     #Kata Ana
@@ -385,45 +372,48 @@ class VideoWorldGoBattleVSHuman(BaseModel):
                 break
 
             try:
+                quite = False
                 while True:
-                    kata_pos = input('Please enter your move(e.g. D5, E6):')
+                    kata_pos = input('Please enter your move (e.g. D5, E6) or quite (q):')
+                    if kata_pos == 'q':
+                        quite = True
+                        break
                     try:
-                        res = self.send_ai_command('play W {}'.format(kata_pos))
-                        if '?' not in res:
-                            break
+                        col = kata_pos[0]
+                        row = int(kata_pos[1:]) - 1
+                        col = ord(col) - 65 if col != 'J' else ord(col) - 66
+                        _, captured = displayboard.play(row, col, 'w')
+                        break
                     except:
                         print("Error, please enter again")
                         continue
-                score = self.send_ai_command('final_score')
-                col = kata_pos[0]
-                row = int(kata_pos[1:]) - 1
-                col = ord(col) - 65 if col != 'J' else ord(col) - 66
+                if quite:
+                    break
                 moves.append(('w', (row, col)))
-                _, captured = displayboard.play(row, col, 'w')
                 caps.append(captured)
                 img = render_next_state(moves, caps).to(img)[None]
 
             except:
                 break
-
-        _score = self.send_ai_command('final_score')
-        if 'W' in _score:
+       
+        b_count = sum([displayboard.board[i].count('b') for i in range(9)])
+        w_count = sum([displayboard.board[i].count('w') for i in range(9)])
+        if w_count > b_count:
             eval_dict['results'] = 0
-            print('Write Win')
-        elif 'B' in _score:
+            print('Currently, the write (You) are winning')
+        elif w_count < b_count:
             eval_dict['results'] = 1
-            print('Black Win')
+            print('Currently, the black (VideoWorld) are winning')
         else:
             print('Draw')
-        score = float(_score.split('+')[-1]) if _score is not None else 0
         if eval_dict['results'] != -1:
-            eval_dict['score'] = score if eval_dict['results'] == 1 else -1 * score
+            eval_dict['score'] = 0
        
         eval_dict['moves'] = moves
         record = {'eval_dict': eval_dict}
         
-        with imageio.get_writer(uri=f'{self.work_dir}/visualize/{cur_iter}/{torch.cuda.current_device()}/{index}.gif', mode='I', fps=1) as writer:
-            target_file = f'{self.work_dir}/visualize/{cur_iter}/{torch.cuda.current_device()}/{index}'
+        with imageio.get_writer(uri=f'./visualize/{cur_iter}/{torch.cuda.current_device()}/battle.gif', mode='I', fps=1) as writer:
+            target_file = f'./visualize/{cur_iter}/{torch.cuda.current_device()}'
             for i in range(len(os.listdir(target_file))):
                 writer.append_data(imageio.imread(f'{target_file}/{i}.jpg'))
         
