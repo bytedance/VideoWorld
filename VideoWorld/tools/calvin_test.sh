@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #!/usr/bin/env bash
+export KIVY_NO_ARGS=1
 CONFIG="./configs/calvin_test.py"
 GPUS=1
 NNODES=1

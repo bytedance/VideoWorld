@@ -550,7 +550,7 @@ class TokenizerforCALVIN(BaseTransform):
         assert isinstance(
             pretrained, str
         ), f'Autokenizer must has pretrained models, but get {pretrained}'
-        self.tokenizer = AutoTokenizer.from_pretrained("./work_dirs/init/Llama-300m", model_max_length=max_length, padding_side=padding_side, use_fast=False, **kwargs)
+        self.tokenizer = AutoTokenizer.from_pretrained("./work_dirs/Llama_tokenizer", model_max_length=max_length, padding_side=padding_side, use_fast=False, **kwargs)
       
         self.tokenizer.model_max_length = max_length
         self.tokenizer.add_tokens([DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN, DEFAULT_IMAGE_TOKEN], special_tokens=True)

@@ -79,15 +79,19 @@ bash ./tools/battle_vs_human.sh
 
 
 ### Robotics
-Download CALVIN dataset follow the official instructions and organize it as follows:
+Download CALVIN dataset follow the [official instructions](https://github.com/mees/calvin) and organize it as follows:
 ```
 ├── VideoWorld
 │   ├── VideoWorld
-│   │   └── data
-│   └──       └── calvin
+│   │   │── data
+│   │   │   └── calvin
+│   │   └── work_dirs
+│   │       │── Llama_tokenizer
+│   │       │── calvin_model.pth 
+│   └──     └── Intern_300m
 ```
 
-Testing requires the CALVIN environment configuration. We have automated the installation of CALVIN in the install.sh script. If any issues arise, please refer to the official installation instructions: https://github.com/mees/calvin
+Testing requires the CALVIN environment configuration. We have automated the installation of CALVIN in the install.sh script. If any issues arise, please refer to the official installation instructions
 ```
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 # Since we only tested the tasks of opening drawers, pushing 

@@ -266,7 +266,8 @@ class VideoWorldRobotics(BaseModel):
         task_cfg = OmegaConf.load(conf_dir / "callbacks/rollout/tasks/new_playtable_tasks.yaml")
         self.task_oracle = hydra.utils.instantiate(task_cfg)
         self.val_annotations = OmegaConf.load(conf_dir / "annotations/new_playtable_validation.yaml")
-        os.system('mkdir -p /opt/tiger/rollout/')
+        os.system('mkdir -p ./visualize_calvin')
+        
     def check_rec(self, visual_ids, visual_hand_ids, img, img_hand, is_rollout=False, ep_idx=0):
         
         b, t = visual_hand_ids.shape[:2]
@@ -472,7 +473,7 @@ class VideoWorldRobotics(BaseModel):
 
 
     def rollout_pred_rgb(self, img, seq_input_ids, pred_label=None, seq_attention_mask=None, index=None, **kwargs):
-
+        # import pdb;pdb.set_trace()
         import cv2
         scene = kwargs.pop('scene')
         robot_obs = kwargs.pop('state')
@@ -485,7 +486,7 @@ class VideoWorldRobotics(BaseModel):
         self.eval_env.reset(robot_obs=robot_obs.cpu().numpy()[0], scene_obs=scene.cpu().numpy()[0])
         episode_infos = kwargs.get('episode_infos', None)
         success_counter = 0
-        vis_root = "/opt/tiger/rollout"
+        vis_root = "./visualize_calvin"
         sequence_idx = len(os.listdir(vis_root))
         vis_path = f"{vis_root}/{sequence_idx}"
         os.system(f'mkdir -p {vis_path}')
@@ -665,6 +666,7 @@ class VideoWorldRobotics(BaseModel):
                 break
         print(success_counter)
         record = [{'success_counter': success_counter}]
+        
         return record
 
     def encode_image(self, img, dtype=None, device=None):
