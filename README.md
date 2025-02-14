@@ -54,20 +54,31 @@ bash install.sh
 
 # Inference
 ### Go Battle
+The testing in our paper relies on the KataGo Go engine. Due to the complexity of KataGo's environment setup, we default to not using KataGo as the move evaluation engine. If you wish to use the KataGo engine for detailed move analysis, please use the script below or refer to the [official website](https://github.com/lightvector/KataGo) for installation, and replace the configuration file with go_battle_vs_human.py in the startup script.
+
 VideoWorld relies on the Katago Go engine. We provide scripts to facilitate battles against our model; install Katago to engage in these matches.
 ```
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 bash install_katago.sh 
 ```
-or follow the official installation instructions: https://github.com/lightvector/KataGo
-
-We provide a version of the weights for playing against humans in https://huggingface.co/maverickrzw/VideoWorld-GoBattle. 
 Use the script to start a match:
 ```
 # Please place the weight in the path: ./VideoWorld/work_dirs/go_battle.pth
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 bash ./tools/battle_vs_human.sh
 ```
+We provide the [weight files](https://huggingface.co/maverickrzw/VideoWorld-GoBattle/blob/main) for playing against humans. Please place the various weights according to the following directory structure to start the test. VideoWorld will generate the latent code and the board image for the next move.
+
+```
+├── VideoWorld
+│   ├── VideoWorld
+│   │   │── data
+│   │   │   └── calvin
+│   │   └── work_dirs
+│   │       │── go_fsq.pth 
+│   └──     └── Intern_300m
+```
+
 ### Robotics
 Download CALVIN dataset follow the official instructions and organize it as follows:
 ```
