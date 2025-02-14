@@ -88,6 +88,7 @@ Download CALVIN dataset follow the [official instructions](https://github.com/me
 │   │   └── work_dirs
 │   │       │── Llama_tokenizer
 │   │       │── calvin_model.pth 
+│   │       │── calvin_fsq.pth 
 │   └──     └── Intern_300m
 ```
 
