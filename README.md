@@ -103,6 +103,15 @@ cp ./tools/calvin_utils/multistep_sequences.py ../calvin/calvin_models/calvin_ag
 bash ./tools/calvin_test.sh
 ```
 
+If you encounter the error from the transformers library during inference:
+```
+bos_token_id has to be defined when no input_ids are provided
+```
+You need to modify your local transformers installation file. Replace lines 552-554 in the file located at "site-packages/transformers/generation/utils.py" with:
+```
+model_kwargs["input_ids"] = torch.ones((1, 0), dtype=torch.long, device=self.device)
+```
+
 # Training
 Our training consists of two stages: LDM training and autoregressive transformer training. We use the CALVIN robotic environment as an example to demonstrate how to initiate the training.
 ### Stage 1: LDM Training
