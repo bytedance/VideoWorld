@@ -65,14 +65,12 @@ We provide the [weight files](https://huggingface.co/maverickrzw/VideoWorld-GoBa
 ```
 ├── VideoWorld
 │   ├── VideoWorld
-│   │   │── data
-│   │   │   └── calvin
 │   │   └── work_dirs
 │   │       │── go_fsq.pth 
 │   └──     └── Intern_300m
 ```
 
-Then, Use the script to start a match:
+Then, use the script to start a match:
 ```
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 bash ./tools/battle_vs_human.sh
