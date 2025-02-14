@@ -56,7 +56,6 @@ bash install.sh
 ### Go Battle
 The testing in our paper relies on the KataGo Go engine. Due to the complexity of KataGo's environment setup, we default to not using KataGo as the move evaluation engine. If you wish to use the KataGo engine for detailed move analysis, please use the script below or refer to the [official website](https://github.com/lightvector/KataGo) for installation, and replace the configuration file with go_battle_vs_human.py in the startup script.
 
-VideoWorld relies on the Katago Go engine. We provide scripts to facilitate battles against our model; install Katago to engage in these matches.
 ```
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 bash install_katago.sh 
