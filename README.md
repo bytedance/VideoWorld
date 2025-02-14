@@ -111,11 +111,12 @@ Download CALVIN dataset follow the official instructions and organize it as foll
 ├── VideoWorld
 │   ├── LDM
 │   │   │── data
-│   │   │    └── calvin
+│   │   │   └── calvin
 │   │   └── work_dirs
-│   │        └── magvit_init.pth
+│   │       └── magvit_init.pth
 │   │── VideoWorld     
 │   │   └── work_dirs
+│   │       │── Llama_tokenizer
 │   │       │── calvin_fsq.pth 
 │   └──     └── Intern_300m
          
