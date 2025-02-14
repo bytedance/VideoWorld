@@ -67,6 +67,7 @@ We provide the [weight files](https://huggingface.co/maverickrzw/VideoWorld-GoBa
 │   ├── VideoWorld
 │   │   └── work_dirs
 │   │       │── go_fsq.pth 
+│   │       │── go_battle.pth 
 │   └──     └── Intern_300m
 ```
 
