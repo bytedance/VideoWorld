@@ -61,7 +61,7 @@ The testing in our paper relies on the KataGo Go engine. Due to the complexity o
 cd VideoWorld # This VideoWorld is located in a subdirectory.
 bash install_katago.sh 
 ```
-We provide the [weight files](https://huggingface.co/maverickrzw/VideoWorld-GoBattle/blob/main) for playing against humans. Please place the various weights according to the following directory structure to start the test. VideoWorld will generate the latent code and the board image for the next move.
+We provide the [weight files](https://huggingface.co/maverickrzw/VideoWorld-GoBattle/tree/main) for playing against humans. Please place the various weights according to the following directory structure to start the test. VideoWorld will generate the latent code and the board image for the next move.
 ```
 ├── VideoWorld
 │   ├── VideoWorld
