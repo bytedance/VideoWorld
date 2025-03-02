@@ -10,6 +10,7 @@
 
 
 ## :fire: News
+* **[2025.2]** Our VideoWorld has been accepted by CVPR 2025!.
 * **[2025.1]** We release the code and dataset.
 
 # Highlight
