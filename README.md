@@ -2,7 +2,7 @@
 > #### Zhongwei Ren, Yunchao Wei<sup>&dagger;</sup>, Xun Guo, Yao Zhao, Bingyi Kang, Jiashi Feng, and Xiaojie Jin<sup>&dagger;</sup><sup>&ddagger;</sup>
 > <sup>&dagger;</sup>Correspondence, <sup>&ddagger;</sup>Project Lead
 
-> Beijing Jiaotong University, University of Science and Technology of China, ByteDance Seed
+> Beijing Jiaotong University, ByteDance Seed
 
 <font size=7><div align='center' > <a href='https://arxiv.org/pdf/2501.09781'>**Paper**</a> | <a href="https://maverickren.github.io/VideoWorld.github.io">**Project Page**</a> | [**Installation**](#Install) | [**Training**](#training) | [**Inference**](#inference)  | <a href="https://huggingface.co/datasets/maverickrzw/VideoGo-Bench">**Video-GoBench**</a></div></font>
 
